@@ -1,0 +1,183 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String          @id @default(cuid())
+  email           String?         @unique
+  name            String?
+  password        String?         // Made optional for OAuth-only users
+  avatarUrl       String?
+  isEmailVerified Boolean         @default(false)
+  accounts        Account[] 
+  refreshTokens   RefreshToken[]
+  PasswordResets  PasswordReset[]
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  lastLogin       DateTime?       // Added for security auditing
+
+  
+
+  @@index([email])
+}
+
+model Account {
+  id                  String   @id @default(cuid())
+  provider            String
+  providerAccountId   String
+  userId              String
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken         String?
+  refreshToken        String?   // Critical for OAuth token rotation
+  expiresAt           Int?      // Token expiration timestamp
+  tokenType           String?
+  scope               String?
+  idToken             String?   // Added for OpenID Connect (Apple)
+  createdAt           DateTime  @default(now())
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model RefreshToken {
+  id          String   @id @default(cuid())
+  userId      String
+  tokenHash   String   @unique // Prevent token reuse
+  revoked     Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  expiresAt   DateTime
+  userAgent   String?  // Added for security auditing
+  ipAddress   String?  // Added for security auditing
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([tokenHash])
+}
+
+model EmailOTP {
+  id          String   @id @default(cuid())
+  email       String
+  otpHash     String
+  attempts    Int      @default(0)
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+  used        Boolean  @default(false) // Critical for one-time use
+  revoked     Boolean  @default(false)
+  userId      String?  // Link to user AFTER verification
+
+  @@unique([email, otpHash]) // Prevent duplicate attempts
+  @@index([email])
+  @@index([expiresAt])
+}
+
+model PasswordReset {
+  id          String   @id @default(cuid())
+  userId      String
+  tokenHash   String   @unique
+  createdAt   DateTime @default(now())
+  expiresAt   DateTime
+  used        Boolean  @default(false)
+  userAgent   String?
+  ipAddress   String?
+
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([tokenHash])
+  @@index([expiresAt])
+}
+
+model Conversation {
+  id          String                     @id @default(cuid())
+  title       String?                    // optional human-friendly title (for groups)
+  isGroup     Boolean                    @default(false)
+  metadata    Json?                      // optional JSON metadata (avatar, settings, etc.)
+
+  participants ConversationParticipant[]
+  messages     Message[]
+
+  createdAt   DateTime                   @default(now())
+  updatedAt   DateTime                   @updatedAt
+
+  /// Useful index to quickly filter group vs private conversations
+  @@index([isGroup])
+}
+
+model ConversationParticipant {
+  id             String       @id @default(cuid())
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  conversationId String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String
+
+  // Per-participant metadata
+  lastReadAt     DateTime?
+  role           String?       // e.g. "admin", "member" (useful for groups)
+  joinedAt       DateTime      @default(now())
+
+  /// Ensure one row per (conversation, user)
+  @@unique([conversationId, userId])
+  @@index([userId])
+  @@index([conversationId])
+}
+
+model Message {
+  id             String             @id @default(cuid())
+  conversation   Conversation       @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  conversationId String
+  sender         User?              @relation(fields: [senderId], references: [id], onDelete: SetNull)
+  senderId       String?
+
+  // Core content (for now text)
+  content        String
+  type           String             @default("text") // 'text' | 'image' | 'file' | etc.
+  isDeleted      Boolean            @default(false)
+  edited         Boolean            @default(false)
+  editedAt       DateTime?
+
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  receipts       MessageReceipt[]
+  attachments    Attachment[]
+
+  @@index([conversationId, createdAt])
+  @@index([senderId, createdAt])
+}
+
+model MessageReceipt {
+  id          String   @id @default(cuid())
+  message     Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  messageId   String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+
+  // delivery/read lifecycle fields
+  deliveredAt DateTime?
+  readAt      DateTime?
+  metadata    Json?
+
+  /// One receipt per (message, user)
+  @@unique([messageId, userId])
+  @@index([userId])
+  @@index([messageId])
+}
+
+model Attachment {
+  id          String   @id @default(cuid())
+  message     Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  messageId   String
+  url         String   // S3/Cloud CDN URL or signed URL
+  mimeType    String?
+  filename    String?
+  sizeBytes   Int?
+  createdAt   DateTime @default(now())
+
+  @@index([messageId])
+}
