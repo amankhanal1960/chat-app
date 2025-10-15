@@ -21,7 +21,21 @@ model User {
   updatedAt       DateTime        @updatedAt
   lastLogin       DateTime?       // Added for security auditing
 
-  
+  // --- Messaging back-relations (added) ---
+  // ConversationParticipant rows where this user participates
+
+  converstationParticipants ConversationParticipant[]
+
+  // Messages this user Sent
+
+  sentMessages Message[]
+
+  // Message receipts for this user (delivered/read metadata)
+
+  messageReceipts MessageReceipt[]
+
+
+
 
   @@index([email])
 }
