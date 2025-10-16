@@ -462,7 +462,7 @@ export async function handleGoogleOAuth(req, res) {
 //       },
 //     });
 //   } catch (error) {
-//     console.error("GitHub OAuth error:", error);
+//     console.error("Facebook OAuth error:", error);
 
 //     if (error.code === "P2002") {
 //       return res.status(409).json({ error: "User already exists" });
