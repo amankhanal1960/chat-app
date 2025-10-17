@@ -93,6 +93,8 @@ export const messageHandler = {
       const { conversationId, limit = 50, cursor = null } = data;
       const userId = socket.data.user.id;
 
+      // Validation
+
       if (!conversationId) {
         if (callback) {
           callback({ success: false, error: "Conversation ID is required" });
@@ -100,11 +102,17 @@ export const messageHandler = {
         return;
       }
 
+      const result = await messageService.getMessage(conversationId, userId, {
+        limit,
+        cursor,
+      });
+
       if (callback) {
         callback({
           success: true,
-          message: [],
-          hasMore: false,
+          messages: result.messages, // Real messages form DB
+          hasMore: result.hasMore, // Real pagination status
+          nextCursor: result.nextCursor, // For loading more messages
         });
       }
     } catch (error) {
