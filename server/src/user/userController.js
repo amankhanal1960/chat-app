@@ -61,7 +61,7 @@ export async function registerUser(req, res) {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const result = await db.$transaction(async (tx) => {
-      const newUser = await db.user.create({
+      const newUser = await tx.user.create({
         data: {
           name,
           email: normalizedEmail,
