@@ -70,10 +70,9 @@ export const messageHandler = {
       }
 
       socket
-        .to(`conversation: ${conversationId}`)
+        //socket.to(room) = send to this room, but exclude me
+        .to(`conversation:${conversationId}`)
         .emit("message:new", messageData);
-
-      socket.emit("message:new", messageData);
 
       console.log("Message Sent Successfully:", message.id);
     } catch (error) {
@@ -114,7 +113,7 @@ export const messageHandler = {
       if (callback) {
         callback({
           success: false,
-          error: error.message || "Failde to fetch messages",
+          error: error.message || "failed to fetch messages",
         });
       }
     }

@@ -111,4 +111,42 @@ export const messageService = {
 
     return result;
   },
+
+  async getMessage(conversationId, userId, { limit = 50, cursor = null } = {}) {
+    // Security: Check user is in conversation
+    const canAccess = await db.conversationParticipant.findFirst({
+      where: {
+        conversationId,
+        userId,
+      },
+    });
+
+    if (!canAccess) throw new Error("Access Denied!");
+
+    // Fetch the messages with pagination
+    const messages = await db.message.findMany({
+      where: {
+        conversationId,
+        isDeleted: false,
+      },
+      include: {
+        sender: { select: { id: true, name: true, email: true } },
+        attachments: true,
+      },
+
+      orderBy: { createdAt: "desc" },
+      take: limit + 1,
+      cursor: cursor ? { id: cursor } : undefined,
+      skip: cursor ? 1 : 0,
+    });
+
+    const hasMore = messages.length > limit;
+    if (hasMore) messages.pop(); // Remove the extra
+
+    return {
+      messages: messages.reverse(),
+      hasMore,
+      nextCursor: hasMore ? messages[messages.length - 1]?.id : null,
+    };
+  },
 };
