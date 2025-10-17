@@ -49,6 +49,35 @@ export const messageService = {
         },
       });
 
+      //  // This is what gets stored in `const message`
+      // {
+      //   id: "msg_789",
+      //   content: "Hello everyone!",
+      //   conversationId: "conv_123",
+      //   senderId: "user_456",
+      //   createdAt: "2023-10-01T10:30:00.000Z",
+      //   updatedAt: "2023-10-01T10:30:00.000Z",
+      //   // From include:
+      //   sender: {
+      //     id: "user_456",
+      //     name: "Alice",
+      //     email: "alice@example.com"
+      //   },
+      //   attachments: [
+      //     {
+      //       id: "att_001",
+      //       url: "https://example.com/file.jpg",
+      //       filename: "photo.jpg",
+      //       mimeType: "image/jpeg",
+      //       sizeBytes: 1024000,
+      //       messageId: "msg_789",
+      //       createdAt: "2023-10-01T10:30:00.000Z"
+      //     }
+      //   ]
+      // }
+
+      //   and this is what gets returned when we return the message
+
       await tx.conversation.update({
         where: { id: conversationId },
         data: { updatedAt: new Date() },
