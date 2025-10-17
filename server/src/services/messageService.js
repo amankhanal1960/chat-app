@@ -149,4 +149,6 @@ export const messageService = {
       nextCursor: hasMore ? messages[messages.length - 1]?.id : null,
     };
   },
+
+  //   async markAsRead() {},
 };

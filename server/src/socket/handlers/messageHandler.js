@@ -127,21 +127,21 @@ export const messageHandler = {
     }
   },
 
-  async handleTyping(socket, data, callback) {
-    try {
-      const { conversationId, isTyping } = data;
-      const user = socket.data.user;
+  // async handleTyping(socket, data, callback) {
+  //   try {
+  //     const { conversationId, isTyping } = data;
+  //     const user = socket.data.user;
 
-      if (!conversationId) return;
+  //     if (!conversationId) return;
 
-      socket.to(`conversation:${conversationId}`).emit("user:typing", {
-        userId: user.id,
-        userName: user.name,
-        isTyping,
-        conversationId,
-      });
-    } catch (error) {
-      console.error("Typing indicator error:", error);
-    }
-  },
+  //     socket.to(`conversation:${conversationId}`).emit("user:typing", {
+  //       userId: user.id,
+  //       userName: user.name,
+  //       isTyping,
+  //       conversationId,
+  //     });
+  //   } catch (error) {
+  //     console.error("Typing indicator error:", error);
+  //   }
+  // },
 };
