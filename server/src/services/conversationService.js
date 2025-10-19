@@ -84,8 +84,41 @@ export const conversationService = {
         await tx.conversationParticipant.createMany({
           data: participantData,
         });
+
+        // Fetch the complete conversation with participants
+
+        return await tx.conversation.findUnique({
+          where: { id: conversation.id },
+          include: {
+            participants: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                  },
+                },
+              },
+            },
+            messages: {
+              take: 1,
+              orderBy: { createdAt: "desc" },
+              include: {
+                sender: {
+                  select: { id: true, name: true, email: true },
+                },
+              },
+            },
+          },
+        });
       });
-    } catch (error) {}
+
+      return conversation;
+    } catch (error) {
+      console.error("ConversationService.createConversation error:", error);
+      throw error;
+    }
   },
 };
 
