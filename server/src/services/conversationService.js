@@ -15,6 +15,7 @@ export const conversationService = {
         throw new Error("At least one participant is required");
       }
 
+      // Builds allParticipantIds by merging creatorid with participantIds and removing duplicates using set
       const allParticipantIds = [
         ...new setImmediate([creatorId, ...participantIds]),
       ];
@@ -36,12 +37,14 @@ export const conversationService = {
       }
 
       // For 1-on-1 conversations, check if already exists
+      // Prevents duplicate 1-on-1 conversation
       if (allParticipantIds.length === 2) {
         const existingConversation = await db.conversation.findFirst({
           where: {
             isGroup: false,
             participants: {
               every: {
+                // every participants userId is in allParticipantIds
                 userId: { in: allParticipantIds },
               },
             },
@@ -72,6 +75,7 @@ export const conversationService = {
         });
 
         // Create participant records
+        // Build the participantData array
         const participantData = allParticipantIds.map((userId) => ({
           conversationId: conversation.id,
 
@@ -120,6 +124,122 @@ export const conversationService = {
       throw error;
     }
   },
-};
 
-// getConversations()
+  // Get all the conversations for a user with pagination
+
+  async getConversations(userId, options = {}) {
+    try {
+      const { limit = 50, skip = 0 } = options;
+
+      if (!userId) throw new Error("User ID is required");
+
+      // Get the conversations with participant count and the latest message
+
+      const conversations = await db.conversation.findMany({
+        where: {
+          participants: {
+            some: { userId },
+          },
+        },
+        include: {
+          participants: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                },
+              },
+            },
+          },
+          messages: {
+            take: 1,
+            orderBy: { createdAt: "desc" },
+            include: {
+              sender: {
+                select: { id: true, name: true, email: true },
+              },
+              attachments: {
+                take: 1, // atmost 1 attachement per message
+                select: {
+                  id: true,
+                  mimeType: true, // type of the attachment
+                  url: true,
+                },
+              },
+            },
+          },
+          _count: {
+            select: {
+              participants: true,
+              messages: true,
+            },
+          },
+        },
+
+        orderBy: { updatedAt: "desc" },
+        skip,
+        take: limit,
+      });
+
+      // Transform the data for client
+
+      const transformedConversations = conversations.map((conv) => ({
+        id: conv.id,
+        title: conv.title,
+        isGroup: conv.isGroup,
+        metadata: conv.metadata,
+        createdAt: conv.createdAt,
+        updatedAt: conv.updatedAt,
+        participants: conv.participants.map((p) => ({
+          id: p.user.id,
+          name: p.user.name,
+          email: p.user.email,
+          role: p.role,
+          lastReadAt: p.lastReadAt,
+        })),
+
+        latestMessage: conv.messages[0]
+          ? {
+              id: conv.messages[0].id,
+              content: conv.messages[0].content,
+              createdAt: conv.messages[0].createdAt,
+              sender: conv.messages[0].sender,
+              attachments: conv.messages[0].attachments,
+            }
+          : null,
+        unreadCount: 0,
+        participantCount: conv._count.participants,
+        messageCount: conv._count.messages,
+      }));
+
+      // Get total count for pagination
+      const totalCount = await db.conversation.count({
+        where: {
+          participants: {
+            some: { userId },
+          },
+        },
+      });
+
+      return {
+        conversations: transformedConversations,
+        pagination: {
+          total: totalCount,
+          hasMore: skip + limit < totalCount,
+          nextSkip: skip + limit,
+        },
+      };
+    } catch (error) {
+      console.error("ConversationService.getConversations error:", error);
+      throw error;
+    }
+  },
+
+  // Get a single conversation
+  async getConversation(conversationId, userId) {
+    try {
+    } catch (error) {}
+  },
+};
