@@ -250,7 +250,34 @@ export const conversationService = {
             some: { userId },
           },
         },
+        include: {
+          participants: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                },
+              },
+            },
+          },
+          _count: {
+            select: {
+              participants: true,
+              messages: true,
+            },
+          },
+        },
       });
-    } catch (error) {}
+
+      if (!conversation) {
+        throw new Error("Conversation not found or access denied");
+      }
+
+      return conversation;
+    } catch (error) {
+      console.error("Conversation.getService Error", error);
+    }
   },
 };
