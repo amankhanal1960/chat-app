@@ -1,3 +1,5 @@
+// socket communication and message handling logic
+
 import { messageService } from "../../services/messageService";
 
 export const messageHandler = {

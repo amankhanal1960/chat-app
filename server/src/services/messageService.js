@@ -1,3 +1,5 @@
+// pure business logic and database operations related to messages
+
 import db from "../lib/db";
 
 export const messageService = {

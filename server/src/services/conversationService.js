@@ -240,6 +240,17 @@ export const conversationService = {
   // Get a single conversation
   async getConversation(conversationId, userId) {
     try {
+      if (!conversationId) throw new Error("Conversation ID is required");
+      if (!userId) throw new Error("User Id is required");
+
+      const conversation = await db.conversation.findFirst({
+        where: {
+          id: conversationId,
+          participants: {
+            some: { userId },
+          },
+        },
+      });
     } catch (error) {}
   },
 };
