@@ -1,6 +1,6 @@
 // socket communication and message handling logic
 
-import { messageService } from "../../services/messageService";
+import { messageService } from "../../services/messageService.js";
 
 export const messageHandler = {
   // the function that handles sending the message

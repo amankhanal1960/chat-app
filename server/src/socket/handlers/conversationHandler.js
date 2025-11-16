@@ -1,4 +1,4 @@
-import { conversationService } from "../../services/conversationService";
+import { conversationService } from "../../services/conversationService.js";
 
 export const conversationHandler = {
   // handle creating a new conversation

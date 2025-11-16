@@ -1,6 +1,6 @@
 // pure business logic and database operations related to messages
 
-import db from "../lib/db";
+import db from "../lib/db.js";
 
 export const messageService = {
   async createMessage({ conversationId, senderId, content, attachments = [] }) {

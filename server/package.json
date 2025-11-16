@@ -16,7 +16,8 @@
   "dependencies": {
     "@prisma/client": "^6.17.1",
     "express": "^5.1.0",
-    "nodemailer": "^7.0.9"
+    "nodemailer": "^7.0.9",
+    "socket.io": "^4.8.1"
   },
   "devDependencies": {
     "bcrypt": "^6.0.0",

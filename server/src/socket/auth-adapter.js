@@ -1,5 +1,5 @@
-import { verifyAccessToken } from "../utils/tokens";
-import db from "../lib/db";
+import { verifyAccessToken } from "../utils/tokens.js";
+import db from "../lib/db.js";
 
 export async function socketAuthMiddleware(socket, next) {
   try {
