@@ -1,3 +1,4 @@
+import http from "http";
 import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
@@ -5,7 +6,15 @@ import userRoutes from "./user/userRoutes.js";
 import authRoutes from "./auth/authRoutes.js";
 import passwordRoutes from "./reset-password/passwordRoute.js";
 
+import { initializeSocket } from "./socket/index.js";
+
 const app = express();
+
+const server = http.createServer(app);
+
+initializeSocket(server);
+
+// CORS configuration
 
 app.use(
   cors({
@@ -57,7 +66,7 @@ app.get("/health", (req, res) => {
   res.json({ status: "OK", timestamp: new Date().toISOString() });
 });
 
-app.listen(4000, () => {
+server.listen(4000, () => {
   console.log("Server listening on http://localhost:4000");
   console.log(
     "Allowed origins:",

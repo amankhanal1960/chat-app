@@ -184,6 +184,7 @@ export const conversationService = {
       });
 
       // Transform the data for client
+      // because when the prisma returns data, it returns more data than the ui needs
 
       const transformedConversations = conversations.map((conv) => ({
         id: conv.id,

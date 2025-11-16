@@ -102,6 +102,8 @@ export const conversationHandler = {
       if (callback) {
         callback({
           success: true,
+
+          // we already get the transformed data from the services so dont need anything extra here
           ...result,
         });
       }
@@ -139,6 +141,8 @@ export const conversationHandler = {
       if (callback) {
         callback({
           success: true,
+
+          // we get the raw prisma data from the getConversation service so we need to shape it here
           conversation: {
             id: conversation.id,
             title: conversation.title,
