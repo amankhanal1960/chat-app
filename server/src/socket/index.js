@@ -1,7 +1,7 @@
 import { Server } from "socket.io";
 import { socketAuthMiddleware } from "./auth-adapter.js";
-import { conversationHandler } from "./handlers/conversationHandler.js";
 
+import { conversationHandler } from "./handlers/conversationHandler.js";
 import { messageHandler } from "./handlers/messageHandler.js";
 
 export function initializeSocket(server) {

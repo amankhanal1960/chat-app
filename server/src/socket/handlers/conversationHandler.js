@@ -2,7 +2,6 @@ import { conversationService } from "../../services/conversationService.js";
 
 export const conversationHandler = {
   // handle creating a new conversation
-
   async createConversation(socket, data, callback) {
     try {
       console.log("Conversation Creation attempt:", {
@@ -88,7 +87,6 @@ export const conversationHandler = {
   },
 
   // handles fetching users new conversations
-
   async getConversations(socket, data, callback) {
     try {
       const { limit, skip } = data;
